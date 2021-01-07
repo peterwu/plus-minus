@@ -1,0 +1,42 @@
+#+title: Plus-Minus Package
+#+options: toc:nil num:nil
+
+* This package attempts to offer plus-minus operations on numbers in a similar fashion to how Vim handles them.
+** Major features include:
+   - Perform a meaningful plus (increment) or minus (decrement) operation on the number at point or in an expected range. If the item under point cannot be parsed as one of the supported, search for an opportunity in the range. Similar to Vim’s CTRL-A.
+   - Support both forward and backward searches
+   - Support arbitrary increments and decrements
+   - Support plus-minus operations on regions (use ~+/-:region+~ or ~+/-:region-~ interactive commands)
+   - Support plug-minus operations on rectangles, aka. blocks. Similar to Vim’s g_CTRL-A.
+** Formats supported so far
+   - Binary numbers
+   - Octal numbers
+   - Hexadecimal numbers
+   - Decimal numbers
+* Installation
+** You may put in =load-path=, =(require 'plus-minus)= and bind keys like this
+   #+begin_src emacs-lisp
+     (global-set-key (kbd "C-c C-a")   '+/-:forward+)
+     (global-set-key (kbd "C-c C-x")   '+/-:forward-)
+     (global-set-key (kbd "C-c M-a")   '+/-:backward+)
+     (global-set-key (kbd "C-c M-x")   '+/-:backward-)
+     (global-set-key (kbd "C-c g C-a") '+/-:block+)
+     (global-set-key (kbd "C-c g C-x") '+/-:block-)
+   #+end_src
+** If you use use-package, you may use something like this
+   #+begin_src emacs-lisp
+     (use-package plus-minus
+       :ensure t
+       :demand t
+       :bind
+       (("C-c C-a"   . +/-:forward+)
+        ("C-c C-x"   . +/-:forward-)
+        ("C-c M-a"   . +/-:backward+)
+        ("C-c M-x"   . +/-:backward-)
+        ("C-c g C-a" . +/-:block+)
+        ("C-c g C-x" . +/-:block-)))
+   #+end_src
+** For evil mode users, you may want to adjust keybindings with your defined leader key
+
+* Bugs and feedback
+  Bugs reports, PRs and any feedback will be highly appreciated. Hope you enjoy this package.

@@ -26,7 +26,7 @@
 
 ;; - binary numbers with leading 0b or 0B
 ;; - octal numbers with leading 0
-;; - hexical numbers with leading 0x or 0X
+;; - hexadecimal numbers with leading 0x or 0X
 ;; - decimal numbers
 
 ;; It is designed with extensibility in mind and new patterns, such as
@@ -78,10 +78,10 @@ A positive number means increment; while a negative number means decrement."
 (defvar +/-:match-handle-alist
   "Define a list of supported match patterns and their respective handlers. This
 list may be updated to support future plus-minus’able items."
-  '((+/-:match-binary  . +/-:handle-binary)
-    (+/-:match-octal   . +/-:handle-octal)
-    (+/-:match-hexical . +/-:handle-hexical)
-    (+/-:match-decimal . +/-:handle-decimal)))
+  '((+/-:match-binary      . +/-:handle-binary)
+    (+/-:match-octal       . +/-:handle-octal)
+    (+/-:match-hexadecimal . +/-:handle-hexadecimal)
+    (+/-:match-decimal     . +/-:handle-decimal)))
 
 (defvar +/-:match-binary
   "Define the regular expression for binary numbers."
@@ -92,8 +92,8 @@ list may be updated to support future plus-minus’able items."
   "Define the regular expression for octal numbers."
   (rx (and ?0 (one-or-more (in "0-7")))))
 
-(defvar +/-:match-hexical
-  "Define the regular expression for hexical numbers."
+(defvar +/-:match-hexadecimal
+  "Define the regular expression for hexadecimal numbers."
   (rx (and ?0 (= 1 (in "xX")) (one-or-more xdigit))))
 
 (defvar +/-:match-decimal
@@ -144,8 +144,8 @@ of increment. If the handling succeeds, return t; otherwise nil."
 	(goto-char point)
 	nil))))
 
-(defun +/-:handle-hexical (step)
-  "Handle hexical numbers in terms of plus/minus functionality with STEP amount
+(defun +/-:handle-hexadecimal (step)
+  "Handle hexadecimal numbers in terms of plus/minus functionality with STEP amount
 of increment. If the handling succeeds, return t; otherwise nil."
   (when (and (char-after)
 	     (or (and (>= (char-after) ?0)
@@ -156,7 +156,7 @@ of increment. If the handling succeeds, return t; otherwise nil."
 		      (<= (char-after) ?f))))
     (let ((point (point)))
       (skip-chars-backward "xX0-9A-Fa-f")
-      (if (looking-at +/-:match-hexical)
+      (if (looking-at +/-:match-hexadecimal)
 	  (let ((result (+ step (string-to-number (substring(match-string 0) 2) 16))))
 	    (if (< result 0) (setq result 0))
 	    (replace-match (format "0x%X" result ))
@@ -238,7 +238,7 @@ if FORWARD? is negative, move backward and perform the minus operation."
   (+/-:plus-plus forward? (- step) limit))
 
 (defun +/-:plus-minus-region (rb re step)
-  "Perform the plus-minus operation on a region, beginning from RB (region beginning)
+  "Perform the plus-minus operation on a region, starting from RB (region beginning)
 to RE (region end) with STEP amount of increment."
   (save-excursion
     (goto-char rb)
@@ -248,7 +248,7 @@ to RE (region end) with STEP amount of increment."
 
 (defun +/-:plus-minus-block (bb be step)
   "Perform the plus-minus operation on a block, also known as rectangle,
-beginning from BB (block beginning) to BE (block end) with STEP amount of increment."
+starting from BB (block beginning) to BE (block end) with STEP amount of increment."
   (save-excursion
     (goto-char bb)
     (let ((alist (extract-rectangle-bounds bb be))
