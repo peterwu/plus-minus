@@ -23,18 +23,18 @@
      (global-set-key (kbd "C-c g C-a") '+/-:block+)
      (global-set-key (kbd "C-c g C-x") '+/-:block-)
    #+end_src
-** If you use use-package, you may use something like this
+** If you use =use-package=, you may use something like this
    #+begin_src emacs-lisp
      (use-package plus-minus
        :ensure t
        :demand t
        :bind
        (("C-c C-a"   . +/-:forward+)
-        ("C-c C-x"   . +/-:forward-)
-        ("C-c M-a"   . +/-:backward+)
-        ("C-c M-x"   . +/-:backward-)
-        ("C-c g C-a" . +/-:block+)
-        ("C-c g C-x" . +/-:block-)))
+	("C-c C-x"   . +/-:forward-)
+	("C-c M-a"   . +/-:backward+)
+	("C-c M-x"   . +/-:backward-)
+	("C-c g C-a" . +/-:block+)
+	("C-c g C-x" . +/-:block-)))
    #+end_src
 ** For evil mode users, you may want to adjust keybindings with your defined leader key
 

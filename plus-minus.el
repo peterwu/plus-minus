@@ -245,8 +245,12 @@ with STEP amount of increment."
   (save-excursion
     (goto-char rb)
     (while (<= (point) re)
-      (+/-:plus-minus +1 step (min (point-at-eol) re))
-      (forward-char))))
+      (let ((buffer-size (buffer-size)))
+	(+/-:plus-minus +1 step (min (point-at-eol) re))
+	;; when a new negative number appears, the RE needs to be shifted
+	;; to the right by 1 position because of the new - sign.
+	(setq re (+ re (- (buffer-size) buffer-size)))
+	(forward-char)))))
 
 (defun +/-:plus-minus-block (bb be step)
   "Perform the operation on a block, also known as rectangle.
@@ -255,16 +259,24 @@ with STEP amount of increment."
   (save-excursion
     (goto-char bb)
     (let ((alist (extract-rectangle-bounds bb be))
-	  (i 0))
+	  (i 0)
+	  (shift 0))
       (dolist (elm alist)
-	(let ((end (cdr elm)))
-	  (+/-:plus-minus +1
-			  (if (> step 0)
-			      (+ step i)
-			    (- step i))
-			  end))
-	(forward-line)
-	(setq i (1+ i))))))
+	(let ((beg (+ shift (car elm)))
+	      (end (+ shift (cdr elm)))
+	      (buffer-size (buffer-size)))
+	  (goto-char beg)
+	  (+/-:plus-minus-region beg end
+				 (if (> step 0)
+				     (+ step i)
+				   (- step i)))
+
+	  ;; we need to shift the beg and the end to the right by the amount of
+	  ;; buffer size increase, because when a positive number turns into a
+	  ;; negative number due to the minus operation, both the beg and the
+	  ;; end points are shifted to the right by 1 due to the - sign.
+	  (setq shift (+ shift (- (buffer-size) buffer-size)))
+	  (setq i (1+ i)))))))
 
 ;;;###autoload
 (defun +/-:forward+ (&optional step)
