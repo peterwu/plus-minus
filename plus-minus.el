@@ -61,7 +61,7 @@
 
 (require 'rx)
 
-(defgroup plus-minus ()
+(defgroup plus-minus nil
   "plus/minus items."
   :group 'lisp
   :prefix "+/-")
@@ -72,34 +72,34 @@ A positive number means increment; while a negative number means decrement."
   :type 'number)
 
 (defcustom +/-:forward? +1
-  "Define default search direction. +1 stands for forward while -1 backward."
+  "Define default search direction.  +1 stands for forward while -1 backward."
   :type 'number)
 
 (defvar +/-:match-handle-alist
-  "Define a list of supported match patterns and their respective handlers. This
-list may be updated to support future plus-minus’able items."
   '((+/-:match-binary      . +/-:handle-binary)
     (+/-:match-octal       . +/-:handle-octal)
     (+/-:match-hexadecimal . +/-:handle-hexadecimal)
-    (+/-:match-decimal     . +/-:handle-decimal)))
+    (+/-:match-decimal     . +/-:handle-decimal))
+  "Define a list of supported match patterns and their respective handlers. This
+list may be updated to support future plus-minus’able items.")
 
 (defvar +/-:match-binary
-  "Define the regular expression for binary numbers."
   (rx (and ?0 (= 1 (in "bB"))
-	   (one-or-more (in "01")))))
+	   (one-or-more (in "01"))))
+  "Define the regular expression for binary numbers.")
 
 (defvar +/-:match-octal
-  "Define the regular expression for octal numbers."
-  (rx (and ?0 (one-or-more (in "0-7")))))
+  (rx (and ?0 (one-or-more (in "0-7"))))
+  "Define the regular expression for octal numbers.")
 
 (defvar +/-:match-hexadecimal
-  "Define the regular expression for hexadecimal numbers."
-  (rx (and ?0 (= 1 (in "xX")) (one-or-more xdigit))))
+  (rx (and ?0 (= 1 (in "xX")) (one-or-more xdigit)))
+  "Define the regular expression for hexadecimal numbers.")
 
 (defvar +/-:match-decimal
-  "Define the regular expression for decimal numbers."
   (rx (and (zero-or-one (or ?- ?+))
-	   (one-or-more digit))))
+	   (one-or-more digit)))
+  "Define the regular expression for decimal numbers.")
 
 (defun +/-:format-binary (number)
   "Format a decimal NUMBER into binary form."
@@ -110,8 +110,8 @@ list may be updated to support future plus-minus’able items."
     (format "0b%s" res)))
 
 (defun +/-:handle-binary (step)
-  "Handle binary numbers in terms of plus/minus functionality with STEP amount
-of increment. If the handling succeeds, return t; otherwise nil."
+  "Handle binary numbers with STEP amount of increment.
+If the handling succeeds, return t; otherwise nil."
   (when (and (char-after)
 	     (or (= (char-after) ?0)
 		 (= (char-after) ?1)))
@@ -127,8 +127,8 @@ of increment. If the handling succeeds, return t; otherwise nil."
 	nil))))
 
 (defun +/-:handle-octal (step)
-  "Handle octal numbers in terms of plus/minus functionality with STEP amount
-of increment. If the handling succeeds, return t; otherwise nil."
+  "Handle octal numbers with STEP amount of increment.
+If the handling succeeds, return t; otherwise nil."
   (when (and (char-after)
 	     (>= (char-after) ?0)
 	     (<= (char-after) ?7))
@@ -145,8 +145,8 @@ of increment. If the handling succeeds, return t; otherwise nil."
 	nil))))
 
 (defun +/-:handle-hexadecimal (step)
-  "Handle hexadecimal numbers in terms of plus/minus functionality with STEP amount
-of increment. If the handling succeeds, return t; otherwise nil."
+  "Handle hexadecimal numbers with STEP amount of increment.
+If the handling succeeds, return t; otherwise nil."
   (when (and (char-after)
 	     (or (and (>= (char-after) ?0)
 		      (<= (char-after) ?9))
@@ -166,8 +166,8 @@ of increment. If the handling succeeds, return t; otherwise nil."
 	nil))))
 
 (defun +/-:handle-decimal (step)
-  "Handle decimal numbers in terms of plus/minus functionality with STEP amount
-of increment. If the handling succeeds, return t; otherwise nil."
+  "Handle decimal numbers with STEP amount of increment.
+If the handling succeeds, return t; otherwise nil."
   (when (and (char-after)
 	     (>= (char-after) ?0)
 	     (<= (char-after) ?9))
@@ -183,9 +183,10 @@ of increment. If the handling succeeds, return t; otherwise nil."
 	nil))))
 
 (defun +/-:search (forward? limit)
-  "Search for items matching patterns until the LIMIT is reached. If FORWARDS? is
-a positive number, then search forward; if negative, then search backward. If the
-search attempt succeeds, return t; otherwise nil."
+  "Search for items matching patterns until the LIMIT is reached.
+If FORWARD?S? is a positive number, then search forward;
+if negative, then search backward.
+If the search attempt succeeds, return t; otherwise nil."
   (let ((match (rx (one-or-more digit))))
     (when (cond
 	   ((> forward? 0)
@@ -199,9 +200,8 @@ search attempt succeeds, return t; otherwise nil."
 (defun +/-:plus-minus-at-point (step)
   "Attempt to parse the item under point with STEP amount of increment.
 If it succeeds, return t; otherwise nil."
-  (let* ((alist +/-:match-handle-alist)
-	 (handled? nil)
-	 (point (point)))
+  (let ((alist +/-:match-handle-alist)
+	(handled? nil))
     (while (and alist (not handled?))
       (let* ((elm (car alist))
 	     (handle (cdr elm)))
@@ -210,20 +210,20 @@ If it succeeds, return t; otherwise nil."
     handled?))
 
 (defun +/-:plus-minus (forward? step limit)
-  "Perform the plus-minus operation with STEP amount of increment until LIMIT is reached.
+  "Perform the operation with STEP amount of increment until LIMIT is reached.
 
-If FORWARDS? is positive, search forward; if negative, search backward.
+If FORWARD? is positive, search forward; if negative, search backward.
 
 If the item under point can be worked, work on it and return;
 If not, search for the first opportunity before LIMIT is reached;
 If the search finds something, work on it and return."
   (unless (+/-:plus-minus-at-point step)
-    (let ((point (point)))
-      (when (+/-:search forward? limit)
-	(+/-:plus-minus-at-point step)))))
+    (when (+/-:search forward? limit)
+      (+/-:plus-minus-at-point step))))
 
 (defun +/-:plus (&optional forward? step limit)
-  "If FORWARD? is positive, move forward and plus STEP amount on the first
+  "Perform plus operation.
+If FORWARD? is positive, move forward and plus STEP amount on the first
 found item before LIMIT is reached;
 if FORWARD? is negative, move backward and perform the plus operation."
   (let ((forward? (or forward? +/-:forward?))
@@ -232,14 +232,16 @@ if FORWARD? is negative, move backward and perform the plus operation."
     (+/-:plus-minus forward? step limit)))
 
 (defun +/-:minus (&optional forward? step limit)
-  "If FORWARD? is positive, move forward and minus STEP amount on the first
+  "Perform minus operation.
+If FORWARD? is positive, move forward and minus STEP amount on the first
 found item before LIMIT is reached;
 if FORWARD? is negative, move backward and perform the minus operation."
-  (+/-:plus-plus forward? (- step) limit))
+  (+/-:plus forward? (- step) limit))
 
 (defun +/-:plus-minus-region (rb re step)
-  "Perform the plus-minus operation on a region, starting from RB (region beginning)
-to RE (region end) with STEP amount of increment."
+  "Perform the operation on a region.
+The region starts from RB (region beginning) to RE (region end)
+with STEP amount of increment."
   (save-excursion
     (goto-char rb)
     (while (<= (point) re)
@@ -247,8 +249,9 @@ to RE (region end) with STEP amount of increment."
       (forward-char))))
 
 (defun +/-:plus-minus-block (bb be step)
-  "Perform the plus-minus operation on a block, also known as rectangle,
-starting from BB (block beginning) to BE (block end) with STEP amount of increment."
+  "Perform the operation on a block, also known as rectangle.
+The block starts from BB (block beginning) to BE (block end)
+with STEP amount of increment."
   (save-excursion
     (goto-char bb)
     (let ((alist (extract-rectangle-bounds bb be))
@@ -260,12 +263,12 @@ starting from BB (block beginning) to BE (block end) with STEP amount of increme
 			      (+ step i)
 			    (- step i))
 			  end))
-	(next-line)
+	(forward-line)
 	(setq i (1+ i))))))
 
 ;;;###autoload
 (defun +/-:forward+ (&optional step)
-  "Perform a forward plus operation with optional STEP amount of increment.
+  "Perform a forward plus with optional STEP amount of increment.
 
 STEP defaults to 1."
   (interactive "p")
@@ -273,7 +276,7 @@ STEP defaults to 1."
 
 ;;;###autoload
 (defun +/-:forward- (&optional step)
-    "Perform a forward minus operation with optional STEP amount of decrement.
+  "Perform a forward minus with optional STEP amount of decrement.
 
 STEP defaults to 1."
   (interactive "p")
@@ -281,7 +284,7 @@ STEP defaults to 1."
 
 ;;;###autoload
 (defun +/-:backward+ (&optional step)
-  "Perform a backward plus operation with optional STEP amount of increment.
+  "Perform a backward plus with optional STEP amount of increment.
 
 STEP defaults to 1."
   (interactive "p")
@@ -289,7 +292,7 @@ STEP defaults to 1."
 
 ;;;###autoload
 (defun +/-:backward- (&optional step)
-    "Perform a backward minus operation with optional STEP amount of decrement.
+  "Perform a backward minus with optional STEP amount of decrement.
 
 STEP defaults to 1."
   (interactive "p")
@@ -297,7 +300,7 @@ STEP defaults to 1."
 
 ;;;###autoload
 (defun +/-:region+ (&optional step)
-    "Perform a plus operation on a region with optional STEP amount of decrement.
+  "Perform a plus on a region with optional STEP amount of increment.
 
 STEP defaults to 1."
   (interactive "p")
@@ -309,7 +312,7 @@ STEP defaults to 1."
 
 ;;;###autoload
 (defun +/-:region- (&optional step)
-    "Perform a minus operation on a region with optional STEP amount of decrement.
+  "Perform a minus on a region with optional STEP amount of decrement.
 
 STEP defaults to 1."
   (interactive "p")
@@ -317,18 +320,20 @@ STEP defaults to 1."
 
 ;;;###autoload
 (defun +/-:block+ (start end &optional step)
-    "Perform a plus operation on a block (also known as rectangle) with
-optional STEP amount of decrement.
+  "Perform a plus on a block with optional STEP amount of increment.
 
+Argument START start of a block
+Argument END end of a block.
 STEP defaults to 1."
   (interactive "r\np")
   (+/-:plus-minus-block start end step))
 
 ;;;###autoload
 (defun +/-:block- (start end &optional step)
-    "Perform a minus operation on a block (also known as rectangle) with
-optional STEP amount of decrement.
+  "Perform a minus on a block with optional STEP amount of decrement.
 
+Argument START start of a block.
+Argument END end of a block.
 STEP defaults to 1."
   (interactive "r\np")
   (+/-:block+ start end (- step)))
