@@ -184,18 +184,20 @@ If the handling succeeds, return t; otherwise nil."
 
 (defun +/-:search (forward? limit)
   "Search for items matching patterns until the LIMIT is reached.
-If FORWARD?S? is a positive number, then search forward;
+If FORWARD? is a positive number, then search forward;
 if negative, then search backward.
 If the search attempt succeeds, return t; otherwise nil."
-  (let ((match (rx (one-or-more digit))))
+  (let ((match (rx (one-or-more digit)))
+	(point (point)))
     (when (cond
 	   ((> forward? 0)
 	    (re-search-forward match limit t))
 	   (t
 	    (re-search-backward match (point-at-bol) t)
-	    (re-search-forward match (point-at-eol) t)))
+	    (re-search-forward match point t)))
       (backward-char)
-      t)))
+      ;; change of point suggests a match after a search
+      (/= point (point)))))
 
 (defun +/-:plus-minus-at-point (step)
   "Attempt to parse the item under point with STEP amount of increment.
@@ -247,8 +249,9 @@ with STEP amount of increment."
     (while (<= (point) re)
       (let ((buffer-size (buffer-size)))
 	(+/-:plus-minus +1 step (min (point-at-eol) re))
-	;; when a new negative number appears, the RE needs to be shifted
-	;; to the right by 1 position because of the new - sign.
+	;; When a new negative number appears or disappears, the RE needs to
+	;; be shifted to the right or the left respectively by 1 position
+	;; because of the - sign.
 	(setq re (+ re (- (buffer-size) buffer-size)))
 	(forward-char)))))
 
@@ -271,10 +274,11 @@ with STEP amount of increment."
 				     (+ step i)
 				   (- step i)))
 
-	  ;; we need to shift the beg and the end to the right by the amount of
-	  ;; buffer size increase, because when a positive number turns into a
-	  ;; negative number due to the minus operation, both the beg and the
-	  ;; end points are shifted to the right by 1 due to the - sign.
+	  ;; We need to shift the beg and the end to the right or the left
+	  ;; by the amount of buffer size increase or decrease, because
+	  ;; negative numbers could appear or disappear due to the plus-minus
+	  ;; operation. As a result, both the beg and the end points need to be
+	  ;; shifted to the right or the left by 1 due to the - sign.
 	  (setq shift (+ shift (- (buffer-size) buffer-size)))
 	  (setq i (1+ i)))))))
 
