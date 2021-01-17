@@ -3,6 +3,8 @@
 ;; Copyright (C) 2021 Peter Wu
 ;; Author: Peter Wu <peterwu@hotmail.com>
 ;; URL: http://github.com/peterwu/plus-minus
+;; Version: 1.0
+;; Package-Requires: ((emacs "25.1"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -130,8 +132,7 @@ If the handling succeeds, return t; otherwise nil."
   "Handle octal numbers with STEP amount of increment.
 If the handling succeeds, return t; otherwise nil."
   (when (and (char-after)
-	     (>= (char-after) ?0)
-	     (<= (char-after) ?7))
+	     (<= ?0 (char-after) ?7))
     (let ((point (point)))
       (skip-chars-backward "0-7")
       (if (looking-at +/-:match-octal)
@@ -148,12 +149,9 @@ If the handling succeeds, return t; otherwise nil."
   "Handle hexadecimal numbers with STEP amount of increment.
 If the handling succeeds, return t; otherwise nil."
   (when (and (char-after)
-	     (or (and (>= (char-after) ?0)
-		      (<= (char-after) ?9))
-		 (and (>= (char-after) ?A)
-		      (<= (char-after) ?F))
-		 (and (>= (char-after) ?a)
-		      (<= (char-after) ?f))))
+	     (or (<= ?0 (char-after) ?9)
+		 (<= ?A (char-after) ?F)
+		 (<= ?a (char-after) ?f)))
     (let ((point (point)))
       (skip-chars-backward "xX0-9A-Fa-f")
       (if (looking-at +/-:match-hexadecimal)
@@ -169,8 +167,7 @@ If the handling succeeds, return t; otherwise nil."
   "Handle decimal numbers with STEP amount of increment.
 If the handling succeeds, return t; otherwise nil."
   (when (and (char-after)
-	     (>= (char-after) ?0)
-	     (<= (char-after) ?9))
+	     (<= ?0 (char-after) ?9))
     (let ((point (point)))
       (skip-chars-backward "0-9")
       (skip-chars-backward "+-")
@@ -274,7 +271,7 @@ with STEP amount of increment."
 				     (+ step i)
 				   (- step i)))
 
-	  ;; We need to shift the beg and the end to the right or the left
+	  ;; Need to shift the beg and the end to the right or the left
 	  ;; by the amount of buffer size increase or decrease, because
 	  ;; negative numbers could appear or disappear due to the plus-minus
 	  ;; operation. As a result, both the beg and the end points need to be
