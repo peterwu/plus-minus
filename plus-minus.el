@@ -62,6 +62,7 @@
 ;;; Code:
 
 (require 'rx)
+(require 'rect)
 
 (defgroup plus-minus nil
   "plus/minus items."
